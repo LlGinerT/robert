@@ -36,9 +36,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtGui import QPixmap, QPalette, QIcon, QImage, QMouseEvent
-from PySide6.QtCore import Qt, QProcess, Slot, QThread, Signal, QTimer, QUrl, QObject
-import subprocess
-import shlex
+from PySide6.QtCore import Qt, Slot, Signal, QTimer, QUrl, QObject
 import glob
 import fitz
 from importlib.resources import files, as_file
@@ -49,7 +47,6 @@ from rdkit.Chem import Draw
 from io import BytesIO
 import csv
 from rdkit.Chem import rdFMCS
-from rdkit import Chem
 from rdkit.Chem.Draw import rdMolDraw2D, rdDepictor
 import rdkit
 import math
