@@ -1179,10 +1179,14 @@ class EasyROB(QMainWindow):
         # Disable the Play button while the process is running
         self.run_button.setDisabled(True)
         self.stop_button.setDisabled(False)  # Enable Stop button
+        
+        # Locate the bundled Python interpreter inside 'robert_env'.
+        # (When the app is frozen, sys.executable points to gui.exe in <base_dir>.)
+        py_exe = Path.cwd()/"robert_env"/"python.exe"
 
         # Build the base command.
         command = (
-            f'python -u -m robert --csv_name "{os.path.basename(self.file_path)}" '
+            f'"{py_exe}" -u -m robert --csv_name "{os.path.basename(self.file_path)}" '
             f'--y "{self.y_dropdown.currentText()}" '
             f'--names "{self.names_dropdown.currentText()}"'
         )
@@ -1371,7 +1375,7 @@ class EasyROB(QMainWindow):
 
         # --alpha (default: 0.05)
         if self.alpha:
-            command += f" --alpha {self.alpha}"
+            command += f" --alpha {self.alpha}" # mirar de quitar
 
         # --shap_show (default: 10)
         if self.shap_show:
@@ -1534,7 +1538,6 @@ class EasyROB(QMainWindow):
 
         # Reset the buttons and progress bar
         self.run_button.setDisabled(False)
-        self.stop_button.setDisabled(True)
         self.progress.setRange(0, 100)
 
         if self.worker:  # Ensure the subprocess is properly closed
