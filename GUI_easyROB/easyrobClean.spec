@@ -1,5 +1,3 @@
-# PyInstaller “onedir” build, can change to onefile but antivirus are less friendly
-
 from pathlib import Path
 block_cipher = None
 
@@ -9,7 +7,7 @@ MAIN_SCRIPT = Path.cwd()/"easyrob.py" # r".\easyrob.py"  entry‑point script
 ICON_FILE = Path.cwd()/"icons"/"Robert_icon.ico"     # application icon
 
 # Folders to bundle with the app
-ROBERT_ENV_DIR = r".\robert_env"    # unpacked conda‑pack env
+ROBERT_ENV_DIR = r".\robert_env"    # unziped conda‑pack env
 IMAGE_DIR = r".\icons"       # PNG/SVG etc.
 RESOURCE_DIR = r"C:\EXAMPLE\assets\resources"    # optional extras if needed add on datas
 
@@ -37,7 +35,7 @@ a = Analysis(
     binaries=[],
     datas=(
         collect_dir(ROBERT_ENV_DIR, "robert_env") +
-        collect_dir(IMAGE_DIR,      "images")),
+        collect_dir(IMAGE_DIR, "images")),
     hiddenimports=[],
     hookspath=[],
     excludes=[],
@@ -53,8 +51,8 @@ exe = EXE(
     a.scripts,
     [],
     name=APP_NAME,
-    console=True,           # True si necesitas ventana cmd
-    debug=True,             # True si necesitas debug  
+    console=True,           # True if cmd window needed
+    debug=True,             # True if debug mode needed(needs console=True)
     icon=ICON_FILE,
     exclude_binaries=False,  
     upx=True,
@@ -68,5 +66,5 @@ coll = COLLECT(
     a.datas,
     strip=False,
     upx=True,
-    name=APP_NAME,                # crea dist/<APP_NAME>/
+    name=APP_NAME,                # create dist/<APP_NAME>/
 )
