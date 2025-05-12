@@ -3,18 +3,41 @@ import os
 import pandas as pd
 from pathlib import Path
 from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QVBoxLayout, QWidget,
-    QComboBox, QListWidget, QProgressBar, QMessageBox, QHBoxLayout, QFrame, QTabWidget, 
-    QLineEdit, QTextEdit, QSizePolicy, QFormLayout, QGridLayout, QGroupBox, QCheckBox, 
-    QScrollArea, QFileDialog, QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem,
+    QApplication,
+    QMainWindow,
+    QLabel,
+    QPushButton,
+    QFileDialog,
+    QVBoxLayout,
+    QWidget,
+    QComboBox,
+    QListWidget,
+    QProgressBar,
+    QMessageBox,
+    QHBoxLayout,
+    QFrame,
+    QTabWidget,
+    QLineEdit,
+    QTextEdit,
+    QSizePolicy,
+    QFormLayout,
+    QGridLayout,
+    QGroupBox,
+    QCheckBox,
+    QScrollArea,
+    QFileDialog,
+    QDialog,
+    QVBoxLayout,
+    QTableWidget,
+    QTableWidgetItem,
 )
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtGui import QPixmap, QPalette, QIcon, QImage
-from PySide6.QtCore import (Qt, QProcess, Slot, QThread, Signal, QTimer, QUrl)
+from PySide6.QtCore import Qt, QProcess, Slot, QThread, Signal, QTimer, QUrl
 import subprocess
 import shlex
 import glob
-import fitz  
+import fitz
 from ansi2html import Ansi2HTMLConverter
 from rdkit.Chem.rdmolfiles import MolsFromCDXMLFile
 
@@ -27,6 +50,7 @@ import csv
 
 class AdvancedOptionsTab(QWidget):
     """Tab for advanced options in the easyROB application."""
+
     def __init__(self, type_dropdown, tab_widget, help_tab, web_view):
         super().__init__()
         self.type = type_dropdown
@@ -34,7 +58,7 @@ class AdvancedOptionsTab(QWidget):
         self.help_tab = help_tab
         self.web_view = web_view
         main_layout = QVBoxLayout(self)
-        grid_layout = QGridLayout()  
+        grid_layout = QGridLayout()
         self.box_features = "QGroupBox { font-weight: bold; }"
 
         # Create section boxes
@@ -45,11 +69,11 @@ class AdvancedOptionsTab(QWidget):
         predict_box = self.create_predict_section()
 
         # Apply Background Colors
-        general_box.setStyleSheet("QGroupBox { background-color: #696969;}")  
-        aqme_box.setStyleSheet("QGroupBox { background-color: #696969;}")  
-        curate_box.setStyleSheet("QGroupBox { background-color: #696969;}")  
-        generate_box.setStyleSheet("QGroupBox { background-color: #696969;}")  
-        predict_box.setStyleSheet("QGroupBox { background-color: #696969;}")  
+        general_box.setStyleSheet("QGroupBox { background-color: #696969;}")
+        aqme_box.setStyleSheet("QGroupBox { background-color: #696969;}")
+        curate_box.setStyleSheet("QGroupBox { background-color: #696969;}")
+        generate_box.setStyleSheet("QGroupBox { background-color: #696969;}")
+        predict_box.setStyleSheet("QGroupBox { background-color: #696969;}")
 
         # GENERAL / AQME (Top Row)
         grid_layout.addWidget(general_box, 0, 0, 1, 1)  # General left
@@ -87,7 +111,7 @@ class AdvancedOptionsTab(QWidget):
         self.seed = QLineEdit()
         self.seed.setPlaceholderText("0")
         layout.addRow(QLabel("seed:"), self.seed)
-        
+
         self.kfold = QLineEdit()
         self.kfold.setPlaceholderText("5")
         layout.addRow(QLabel("kfold:"), self.kfold)
@@ -112,7 +136,7 @@ class AdvancedOptionsTab(QWidget):
 
     def create_aqme_section(self):
         """Creates the AQME section with a box and input fields."""
-        
+
         # Create section container
         box = QGroupBox("AQME")
         box.setStyleSheet(self.box_features)
@@ -147,7 +171,7 @@ class AdvancedOptionsTab(QWidget):
     def create_curate_section(self):
         """Creates the CURATE section with a box and input fields."""
         box = QGroupBox("CURATE")
-        box.setStyleSheet(self.box_features)  
+        box.setStyleSheet(self.box_features)
         layout = QFormLayout()
 
         # Add new input fields for additional options
@@ -192,7 +216,7 @@ class AdvancedOptionsTab(QWidget):
     def create_generate_section(self):
         """Creates the GENERATE section with a box and input fields."""
         box = QGroupBox("GENERATE")
-        box.setStyleSheet(self.box_features)  
+        box.setStyleSheet(self.box_features)
         layout = QFormLayout()
 
         self.model_group = QGroupBox("Models")
@@ -206,9 +230,19 @@ class AdvancedOptionsTab(QWidget):
 
             # Determine which models should be checked by default
             if self.type.currentText() == "Regression":
-                default_checked_models = ["RF", "GB", "NN", "MVL"]  # Regression defaults
+                default_checked_models = [
+                    "RF",
+                    "GB",
+                    "NN",
+                    "MVL",
+                ]  # Regression defaults
             else:
-                default_checked_models = ["RF", "GB", "NN", "AdaB"]  # Classification defaults
+                default_checked_models = [
+                    "RF",
+                    "GB",
+                    "NN",
+                    "AdaB",
+                ]  # Classification defaults
 
             # Update check states instead of recreating widgets
             for model, checkbox in self.modellist.items():
@@ -234,14 +268,14 @@ class AdvancedOptionsTab(QWidget):
         # Error type selection that changes dynamically but is also user-selectable
         self.error_type = QComboBox()
         layout.addRow(QLabel("error_type:"), self.error_type)
-        
+
         def update_error_type():
             self.error_type.clear()
             if self.type.currentText() == "Regression":
                 self.error_type.addItems(["rmse", "mae", "r2"])
             else:
                 self.error_type.addItems(["mcc", "f1", "acc"])
-        
+
         self.type.currentIndexChanged.connect(update_error_type)
         update_error_type()  # Initialize with the correct default values
 
@@ -298,21 +332,21 @@ class AdvancedOptionsTab(QWidget):
     def create_predict_section(self):
         """Creates the PREDICT section with a box and input fields."""
         box = QGroupBox("PREDICT")
-        box.setStyleSheet(self.box_features)  
+        box.setStyleSheet(self.box_features)
         layout = QFormLayout()
-        
+
         self.t_value = QLineEdit()
         self.t_value.setPlaceholderText("2")
         layout.addRow(QLabel("t_value:"), self.t_value)
-        
+
         self.alpha = QLineEdit()
         self.alpha.setPlaceholderText("0.05")
         layout.addRow(QLabel("alpha:"), self.alpha)
-        
+
         self.shap_show = QLineEdit()
         self.shap_show.setPlaceholderText("10")
         layout.addRow(QLabel("shap_show:"), self.shap_show)
-        
+
         self.pfi_show = QLineEdit()
         self.pfi_show.setPlaceholderText("10")
         layout.addRow(QLabel("pfi_show:"), self.pfi_show)
@@ -331,11 +365,13 @@ class AdvancedOptionsTab(QWidget):
         box.setLayout(layout)
         return box
 
+
 class ResultsTab(QWidget):
     """Tab for displaying results dynamically as PDFs are generated."""
+
     def __init__(self, main_tab_widget):
         super().__init__()
-        
+
         self.main_tab_widget = main_tab_widget  # Reference to the main QTabWidget
         self.pdf_tabs = {}  # Store open PDF tabs
 
@@ -370,6 +406,7 @@ class ResultsTab(QWidget):
         self.pdf_tabs[pdf_path] = pdf_viewer
         self.main_tab_widget.setCurrentIndex(index)
 
+
 class PDFViewer(QWidget):
     """Widget to display a PDF inside a scrollable area."""
 
@@ -391,7 +428,7 @@ class PDFViewer(QWidget):
     def load_pdf(self, pdf_path):
         """Loads and renders the PDF pages and centers them."""
         doc = fitz.open(pdf_path)
-        
+
         for page_num in range(len(doc)):
             zoom = 1.2  # size of the PDF pages
             pix = doc[page_num].get_pixmap(matrix=fitz.Matrix(zoom, zoom))
@@ -412,9 +449,10 @@ class PDFViewer(QWidget):
 
         doc.close()
 
+
 class ImagesTab(QWidget):
     """Images tab for displaying images from multiple folders as results of Robert workflow."""
-    
+
     def __init__(self, main_tab_widget, image_folders):
         super().__init__()
 
@@ -447,14 +485,21 @@ class ImagesTab(QWidget):
         }
 
         # Define the exact order of the tabs
-        folder_order = [ "CURATE", "GENERATE/Raw_data","PREDICT", "VERIFY",]
+        folder_order = [
+            "CURATE",
+            "GENERATE/Raw_data",
+            "PREDICT",
+            "VERIFY",
+        ]
 
         # Loop through folders in the defined order
         for folder in folder_order:
             if not os.path.exists(folder):
                 continue  # Skip if the folder doesn't exist
 
-            image_files = sorted(glob.glob(os.path.join(folder, "*.[pjg][np][g]")))  # Detect images
+            image_files = sorted(
+                glob.glob(os.path.join(folder, "*.[pjg][np][g]"))
+            )  # Detect images
 
             # If the folder does not have a tab, create one
             if folder not in self.folder_widgets:
@@ -473,7 +518,9 @@ class ImagesTab(QWidget):
                 folder_widget.setLayout(folder_layout)
 
                 # Get the custom name for the tab
-                tab_name = folder_names.get(folder, os.path.basename(folder))  # Default to folder name if not found
+                tab_name = folder_names.get(
+                    folder, os.path.basename(folder)
+                )  # Default to folder name if not found
 
                 # Add tab with custom name
                 self.folder_tabs.addTab(folder_widget, tab_name)
@@ -502,10 +549,11 @@ class ImagesTab(QWidget):
                     col = 0
                     row += 1
 
+
 class ImageLabel(QLabel):
     """Custom QLabel for displaying an image with right-click copy functionality in the "Images" tab."""
 
-    def __init__(self, image_path, size=400):  
+    def __init__(self, image_path, size=400):
         super().__init__()
 
         self.image_path = image_path
@@ -516,7 +564,14 @@ class ImageLabel(QLabel):
         if pixmap.isNull():
             self.setText("Failed to load image.")
         else:
-            self.setPixmap(pixmap.scaled(size, size, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+            self.setPixmap(
+                pixmap.scaled(
+                    size,
+                    size,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+            )
 
         # Enable right-click copying
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -527,7 +582,9 @@ class ImageLabel(QLabel):
         menu = QMessageBox()
         menu.setWindowTitle("Image Options")
         menu.setText(f"Copy image: {self.image_path}?")
-        menu.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        menu.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
 
         if menu.exec() == QMessageBox.StandardButton.Yes:
             clipboard = QApplication.clipboard()
@@ -536,11 +593,12 @@ class ImageLabel(QLabel):
 
 class EasyROB(QMainWindow):
     """Main window for the easyROB application."""
+
     def __init__(self):
         super().__init__()
         self.file_path = ""
         self.csv_test_path = ""
-        self.process = None  
+        self.process = None
         self.available_list = None
         self.ignore_list = None
         self.manual_stop = False
@@ -554,14 +612,16 @@ class EasyROB(QMainWindow):
         """
 
         def load_mols_from_path(path):
-            if path.endswith('.cdxml'):
+            if path.endswith(".cdxml"):
                 try:
                     mols = MolsFromCDXMLFile(path, sanitize=True, removeHs=True)
                     return [mol for mol in mols if mol is not None]
                 except Exception as e:
-                    QMessageBox.critical(self, "CDXML Read Error", f"Failed to read {path}:\n{str(e)}")
+                    QMessageBox.critical(
+                        self, "CDXML Read Error", f"Failed to read {path}:\n{str(e)}"
+                    )
                     return []
-            elif path.endswith('.sdf'):
+            elif path.endswith(".sdf"):
                 return [mol for mol in Chem.SDMolSupplier(path) if mol is not None]
             else:
                 mol = Chem.MolFromMolFile(path)
@@ -572,12 +632,16 @@ class EasyROB(QMainWindow):
         mols_optional = load_mols_from_path(optional_path) if optional_path else []
 
         if not mols_main:
-            QMessageBox.warning(self, "Error", "No valid molecules found in the main file.")
+            QMessageBox.warning(
+                self, "Error", "No valid molecules found in the main file."
+            )
             return
 
         max_len = max(len(mols_main), len(mols_optional))
         mols_main += [None] * (max_len - len(mols_main))
-        mols_optional += [None] * (max_len - len(mols_optional)) if mols_optional else []
+        mols_optional += (
+            [None] * (max_len - len(mols_optional)) if mols_optional else []
+        )
 
         # Create dialog
         dialog = QDialog(self)
@@ -597,7 +661,7 @@ class EasyROB(QMainWindow):
         table.setHorizontalHeaderLabels(headers)
 
         for row in range(max_len):
-            
+
             # Set molecule(s) for the row
             mol1 = mols_main[row]
             mol2 = mols_optional[row] if mols_optional else None
@@ -614,7 +678,11 @@ class EasyROB(QMainWindow):
                     img.save(buffer, format="PNG")
                     qimg = QImage.fromData(buffer.getvalue())
                     label = QLabel()
-                    label.setPixmap(QPixmap.fromImage(qimg).scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                    label.setPixmap(
+                        QPixmap.fromImage(qimg).scaled(
+                            100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation
+                        )
+                    )
                     hbox.addWidget(label)
 
             widget.setLayout(hbox)
@@ -635,7 +703,6 @@ class EasyROB(QMainWindow):
                 table.setItem(row, 2, QTableWidgetItem(""))  # code_name
                 table.setItem(row, 3, QTableWidgetItem(""))  # target
 
-
         layout.addWidget(table)
 
         # Save Button
@@ -644,7 +711,9 @@ class EasyROB(QMainWindow):
         layout.addWidget(save_button, alignment=Qt.AlignRight)
 
         def save_to_csv():
-            path, _ = QFileDialog.getSaveFileName(dialog, "Save CSV", "", "CSV Files (*.csv)")
+            path, _ = QFileDialog.getSaveFileName(
+                dialog, "Save CSV", "", "CSV Files (*.csv)"
+            )
             if not path:
                 return
 
@@ -677,7 +746,9 @@ class EasyROB(QMainWindow):
         if dialog.exec():
             # If accepted, retrieve paths and pass them
             main_path = dialog.main_chemdraw_path
-            optional_path = dialog.optional_chemdraw_path if dialog.optional_chemdraw_path else None
+            optional_path = (
+                dialog.optional_chemdraw_path if dialog.optional_chemdraw_path else None
+            )
             self.load_chemdraw_file(main_path, optional_path)
 
     def move_to_selected(self):
@@ -699,17 +770,19 @@ class EasyROB(QMainWindow):
     def initUI(self):
         """Initializes the main user interface."""
         # Parameters for the GUI
-        font_size = '14px' # Font size for the titles
-        box_features = "QComboBox { border: 1px solid gray; }" # Styling for the combo 
-        box_features_ignore = "QListWidget { border: 1px solid gray; }"  # Styling for the list widget
+        font_size = "14px"  # Font size for the titles
+        box_features = "QComboBox { border: 1px solid gray; }"  # Styling for the combo
+        box_features_ignore = (
+            "QListWidget { border: 1px solid gray; }"  # Styling for the list widget
+        )
 
         self.setWindowTitle("easyROB")
-        self.setGeometry(100, 100, 800, 400)  
-        
+        self.setGeometry(100, 100, 800, 400)
+
         # Create a QTabWidget to hold the tabs.
         self.tab_widget = QTabWidget()
         self.setCentralWidget(self.tab_widget)
-        
+
         # ===============================
         # "Main" Tab (Original Interface)
         # ===============================
@@ -727,18 +800,19 @@ class EasyROB(QMainWindow):
         # Add to the QTabWidget
         self.tab_widget.addTab(scroll_area, "Robert")
 
-
         # --- Add logo with frame ---
-        path_logo = Path(__file__).parent / "icons" / "Robert_logo_transparent.png"       
+        path_logo = Path(__file__).parent / "icons" / "Robert_logo_transparent.png"
         if path_logo.exists():
             pixmap = QPixmap(str(path_logo))
 
             # Resize the image while maintaining aspect ratio
-            scaled_pixmap = pixmap.scaled(400, 150, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            scaled_pixmap = pixmap.scaled(
+                400, 150, Qt.KeepAspectRatio, Qt.SmoothTransformation
+            )
             logo_label = QLabel(self)
             logo_label.setPixmap(scaled_pixmap)
             logo_label.setAlignment(Qt.AlignCenter)
-          
+
             # Add the logo to a frame and center it
             logo_frame = QFrame()
             logo_layout = QVBoxLayout()
@@ -751,7 +825,7 @@ class EasyROB(QMainWindow):
         try:
             self.setWindowIcon(QPixmap(str(path_icon)))
         except Exception:
-            pass 
+            pass
 
         # --- Input CSV File (Required) ---
         input_layout = QVBoxLayout()
@@ -762,9 +836,9 @@ class EasyROB(QMainWindow):
             "Drag & Drop a CSV file here",
             self,
             file_filter="CSV Files (*.csv)",
-            extensions=(".csv",)
+            extensions=(".csv",),
         )
-        self.file_label.set_callback(self.set_file_path)        
+        self.file_label.set_callback(self.set_file_path)
         input_layout.addWidget(self.file_title)
         input_layout.addWidget(self.file_label)
 
@@ -778,15 +852,17 @@ class EasyROB(QMainWindow):
             "Drag & Drop a CSV test file here (optional)",
             self,
             file_filter="CSV Files (*.csv)",
-            extensions=(".csv",)
+            extensions=(".csv",),
         )
         self.csv_test_label.set_callback(self.set_csv_test_path)
 
         test_layout.addWidget(self.csv_test_title)
         test_layout.addWidget(self.csv_test_label)
-        
+
         # --- ChemDraw Button Centered ---
-        self.chemdraw_button = QPushButton("Generate CSV from ChemDraw Files or SDF file")
+        self.chemdraw_button = QPushButton(
+            "Generate CSV from ChemDraw Files or SDF file"
+        )
         self.chemdraw_button.setStyleSheet("padding: 10px; font-weight: bold;")
         self.chemdraw_button.clicked.connect(self.open_chemdraw_popup)
 
@@ -803,7 +879,7 @@ class EasyROB(QMainWindow):
 
         # --- Add All to Main Layout ---
         main_layout.addLayout(csv_layout)
-   
+
         # --- Select column for --y ---
         self.y_label = QLabel("Select Target Column (y)")
         self.y_label.setStyleSheet(f"font-weight: bold; font-size: {font_size};")
@@ -811,7 +887,7 @@ class EasyROB(QMainWindow):
         self.y_dropdown = QComboBox()
         main_layout.addWidget(self.y_dropdown)
         self.y_dropdown.setStyleSheet(box_features)
-        
+
         # --- Select prediction type ---
         self.type_label = QLabel("Prediction Type")
         self.type_label.setStyleSheet(f"font-weight: bold; font-size: {font_size};")
@@ -820,16 +896,15 @@ class EasyROB(QMainWindow):
         self.type_dropdown.addItems(["Regression", "Classification"])
         main_layout.addWidget(self.type_dropdown)
         self.type_dropdown.setStyleSheet(box_features)
-     
-        
+
         # --- Select column for --names ---
         self.names_label = QLabel("Select name column")
         self.names_label.setStyleSheet(f"font-weight: bold; font-size: {font_size};")
         main_layout.addWidget(self.names_label)
         self.names_dropdown = QComboBox()
-        main_layout.addWidget(self.names_dropdown) 
+        main_layout.addWidget(self.names_dropdown)
         self.names_dropdown.setStyleSheet(box_features)
-     
+
         # Main horizontal layout for column selection
         column_layout = QHBoxLayout()
 
@@ -849,16 +924,20 @@ class EasyROB(QMainWindow):
 
         self.add_button = QPushButton(">>")
         self.add_button.setFixedSize(40, 30)
-        self.add_button.clicked.connect(self.move_to_selected)   # Moves selected items to "Ignored Columns"
+        self.add_button.clicked.connect(
+            self.move_to_selected
+        )  # Moves selected items to "Ignored Columns"
         self.remove_button = QPushButton("<<")
         self.remove_button.setFixedSize(40, 30)
-        self.remove_button.clicked.connect(self.move_to_available)  # Moves selected items back to "Available Columns"
+        self.remove_button.clicked.connect(
+            self.move_to_available
+        )  # Moves selected items back to "Available Columns"
 
         # Add buttons to the button layout
-        button_layout.addStretch()  
+        button_layout.addStretch()
         button_layout.addWidget(self.add_button, alignment=Qt.AlignCenter)
         button_layout.addWidget(self.remove_button, alignment=Qt.AlignCenter)
-        button_layout.addStretch()  
+        button_layout.addStretch()
 
         # Right side (Ignored Columns)
         right_layout = QVBoxLayout()
@@ -877,27 +956,22 @@ class EasyROB(QMainWindow):
 
         # Inserting into the main layout
         main_layout.addLayout(column_layout)
-        main_layout.addSpacing(10)  
+        main_layout.addSpacing(10)
 
         # AQME Workflow Checkbox
-        self.aqme_workflow = QCheckBox("Enable AQME Workflow") 
+        self.aqme_workflow = QCheckBox("Enable AQME Workflow")
         self.aqme_workflow.setStyleSheet("font-weight: bold; font-size: 14px;")
         main_layout.addWidget(self.aqme_workflow)
-        main_layout.addSpacing(10)  
+        main_layout.addSpacing(10)
 
         # Workflow selection dropdown
         self.workflow_selector = QComboBox()
         self.workflow_selector.setStyleSheet("font-weight: bold; font-size: 14px;")
 
         # Add options
-        self.workflow_selector.addItems([
-            "Full Workflow",
-            "CURATE",
-            "GENERATE",
-            "PREDICT",
-            "VERIFY",
-            "REPORT"
-        ])
+        self.workflow_selector.addItems(
+            ["Full Workflow", "CURATE", "GENERATE", "PREDICT", "VERIFY", "REPORT"]
+        )
 
         # Set default selection
         self.workflow_selector.setCurrentText("Full Workflow")
@@ -908,7 +982,9 @@ class EasyROB(QMainWindow):
 
         # --- Run button ---
         # Get the absolute path of the icon
-        icon_play_path = os.path.join(os.path.dirname(__file__), "icons", "play_icon.png")
+        icon_play_path = os.path.join(
+            os.path.dirname(__file__), "icons", "play_icon.png"
+        )
 
         self.run_button = QPushButton(" Run ROBERT")
         self.run_button.setFixedSize(200, 40)  # Adjust button size
@@ -917,7 +993,8 @@ class EasyROB(QMainWindow):
         self.run_button.setIcon(QIcon(icon_play_path))
 
         # Apply button styling
-        self.run_button.setStyleSheet("""
+        self.run_button.setStyleSheet(
+            """
             QPushButton {
                 font-weight: bold;
                 font-size: 14px;
@@ -935,17 +1012,21 @@ class EasyROB(QMainWindow):
                 background-color: #222;
                 border: 2px solid #444;
             }
-        """)
+        """
+        )
 
         self.run_button.clicked.connect(self.run_robert)
 
         # --- Stop Button ---
-        stop_icon_path = os.path.join(os.path.dirname(__file__), "icons", "stop_icon.png")
+        stop_icon_path = os.path.join(
+            os.path.dirname(__file__), "icons", "stop_icon.png"
+        )
         self.stop_button = QPushButton("Stop ROBERT")
         self.stop_button.setFixedSize(200, 40)
         self.stop_button.setIcon(QIcon(stop_icon_path))
         self.stop_button.setDisabled(True)  # Initially disabled
-        self.stop_button.setStyleSheet("""
+        self.stop_button.setStyleSheet(
+            """
             QPushButton {
                 font-weight: bold;
                 font-size: 14px;
@@ -963,7 +1044,8 @@ class EasyROB(QMainWindow):
                 background-color: #800000;
                 border: 2px solid #600000;
             }
-        """)
+        """
+        )
         self.stop_button.clicked.connect(self.stop_robert)
 
         # # Add button layout to the main layout
@@ -972,13 +1054,14 @@ class EasyROB(QMainWindow):
         button_container.addWidget(self.stop_button)
         main_layout.addLayout(button_container)
 
-
         # --- Console Output Setup ---
         self.console_output = QTextEdit()
         self.console_output.setReadOnly(True)
-        self.console_output.setStyleSheet("background-color: black; color: white; padding: 5px; font-family: monospace;")
+        self.console_output.setStyleSheet(
+            "background-color: black; color: white; padding: 5px; font-family: monospace;"
+        )
         self.console_output.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.console_output.setMinimumHeight(200) # Set minimum height
+        self.console_output.setMinimumHeight(200)  # Set minimum height
 
         # Create ANSI converter to display colors in the console and special characters
         self.ansi_converter = Ansi2HTMLConverter(dark_bg=True)  # Preserves colors
@@ -989,7 +1072,8 @@ class EasyROB(QMainWindow):
         main_layout.addStretch()
         self.progress = QProgressBar()
         self.progress.setFixedHeight(10)  # Adjust height for a sleeker look
-        self.progress.setStyleSheet("""
+        self.progress.setStyleSheet(
+            """
             QProgressBar {
                 border: 2px solid gray;
                 border-radius: 10px;
@@ -1002,7 +1086,8 @@ class EasyROB(QMainWindow):
                 width: 5px;
                 border-radius: 10px;
             }
-        """)
+        """
+        )
         main_layout.addWidget(self.progress)
 
         # --- Launch the process and connect output signals ---
@@ -1013,21 +1098,25 @@ class EasyROB(QMainWindow):
         # Connect signals to capture standard output and error
         self.process.readyReadStandardOutput.connect(self.handle_stdout)
         self.process.readyReadStandardError.connect(self.handle_stderr)
-        
+
         # ================
-        # Create Help Tab 
+        # Create Help Tab
         # ================
         self.help_tab = QWidget()
         help_layout = QVBoxLayout(self.help_tab)
 
         self.web_view = QWebEngineView()
-        self.web_view.setUrl(QUrl("https://robert.readthedocs.io/en/latest/index.html#"))
+        self.web_view.setUrl(
+            QUrl("https://robert.readthedocs.io/en/latest/index.html#")
+        )
         help_layout.addWidget(self.web_view)
 
         # ===============================
         # "Options" Tab (Additional Parameters)
         # ===============================
-        self.options_tab = AdvancedOptionsTab(self.type_dropdown, self.tab_widget, self.help_tab, self.web_view)
+        self.options_tab = AdvancedOptionsTab(
+            self.type_dropdown, self.tab_widget, self.help_tab, self.web_view
+        )
 
         # ===============================
         # Add tabs to the main tab widget in desired order
@@ -1042,9 +1131,10 @@ class EasyROB(QMainWindow):
         help_layout = QVBoxLayout(self.help_tab)
 
         self.web_view = QWebEngineView()
-        self.web_view.setUrl(QUrl("https://robert.readthedocs.io/en/latest/index.html#"))
+        self.web_view.setUrl(
+            QUrl("https://robert.readthedocs.io/en/latest/index.html#")
+        )
         help_layout.addWidget(self.web_view)
-
 
         # ===============================
         # "Results" Tab (PDF report)
@@ -1098,15 +1188,18 @@ class EasyROB(QMainWindow):
         if tab_index != -1:
             self.tab_widget.setTabEnabled(tab_index, has_folders)
 
-
     def check_for_pdfs(self):
         """Enable or disable the 'Results' tab based on PDF presence."""
         has_pdfs = bool(glob.glob("ROBERT_report*.pdf"))
-        self.tab_widget.setTabEnabled(self.tab_widget.indexOf(self.tab_widget_results), has_pdfs)
- 
+        self.tab_widget.setTabEnabled(
+            self.tab_widget.indexOf(self.tab_widget_results), has_pdfs
+        )
+
     def select_file(self):
         """Opens file dialog to select a CSV file."""
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select CSV File", "", "CSV Files (*.csv)")
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Select CSV File", "", "CSV Files (*.csv)"
+        )
         if file_path:
             self.set_file_path(file_path)
 
@@ -1118,7 +1211,9 @@ class EasyROB(QMainWindow):
 
     def select_csv_test_file(self):
         """Opens file dialog to select a test CSV file."""
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select Test CSV File", "", "CSV Files (*.csv)")
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Select Test CSV File", "", "CSV Files (*.csv)"
+        )
         if file_path:
             self.set_csv_test_path(file_path)
 
@@ -1138,7 +1233,7 @@ class EasyROB(QMainWindow):
     def load_csv_columns(self):
         """Loads column names from the selected CSV file and updates all selection fields."""
         if self.file_path:
-            df = pd.read_csv(self.file_path, encoding='utf-8')
+            df = pd.read_csv(self.file_path, encoding="utf-8")
             columns = list(df.columns)
 
             # --- Update Dropdowns ---
@@ -1148,10 +1243,10 @@ class EasyROB(QMainWindow):
             self.names_dropdown.addItems(columns)
 
             # --- Update Dual-List Selection ---
-            self.available_list.clear()  
-            if self.ignore_list:  
+            self.available_list.clear()
+            if self.ignore_list:
                 self.ignore_list.clear()
-            self.available_list.addItems(columns)  
+            self.available_list.addItems(columns)
 
     def rename_existing_pdf(self, base_filename):
         """Renames an existing PDF file by adding an incremental number."""
@@ -1162,60 +1257,82 @@ class EasyROB(QMainWindow):
         index = 1
         while os.path.exists(f"ROBERT_report_{index}.pdf"):
             index += 1
-        
+
         new_filename = f"ROBERT_report_{index}.pdf"
         os.rename(base_filename, new_filename)
 
-    
     def run_robert(self):
         """Runs the ROBERT workflow with the selected parameters."""
-        if not self.file_path or not self.y_dropdown.currentText() or not self.names_dropdown.currentText():
-            QMessageBox.warning(self, "WARNING!", "Please select a CSV file, a column for target value, and a name column.")
+        if (
+            not self.file_path
+            or not self.y_dropdown.currentText()
+            or not self.names_dropdown.currentText()
+        ):
+            QMessageBox.warning(
+                self,
+                "WARNING!",
+                "Please select a CSV file, a column for target value, and a name column.",
+            )
             return
-        
+
         # Check and rename existing "ROBERT_report.pdf" files
         self.rename_existing_pdf("ROBERT_report.pdf")
 
         # Disable the Play button while the process is running
         self.run_button.setDisabled(True)
         self.stop_button.setDisabled(False)  # Enable Stop button
-        
-        # Locate the bundled Python interpreter inside 'robert_env'.
-        # (When the app is frozen, sys.executable points to gui.exe in <base_dir>.)
-        py_exe = Path.cwd()/"robert_env"/"python.exe"
 
+        # Locate the bundled embed Python interpreter inside 'robert_env'.
+        # (When the app is frozen, sys.executable points to gui.exe in <base_dir>.)
+        py_exe = "Python"
+
+        if getattr(sys, "frozen", False):
+            base_dir = Path.cwd() / "_internal" / "robert_env"
+
+            if sys.platform == "win32":
+                py_exe = base_dir / "python.exe"
+
+            elif sys.platform == "linux":
+                py_exe = base_dir / "bin" / "python"
+
+            elif sys.platform == "darwin":
+                py_exe = base_dir / "bin" / "python3"
+
+            else:
+                print("unsuported os")  # Temporal, manejar el error mejor.
         # Build the base command.
         command = (
             f'"{py_exe}" -u -m robert --csv_name "{os.path.basename(self.file_path)}" '
             f'--y "{self.y_dropdown.currentText()}" '
             f'--names "{self.names_dropdown.currentText()}"'
         )
-        
+
         if self.csv_test_path:
             command += f' --csv_test "{os.path.basename(self.csv_test_path)}"'
-        
+
         if self.type_dropdown.currentText() == "Classification":
             command += ' --type "clas"'
-        
+
         selected_columns = [
-            self.ignore_list.item(i).text() 
-            for i in range(self.ignore_list.count())  
+            self.ignore_list.item(i).text() for i in range(self.ignore_list.count())
         ]
 
         if selected_columns:
-            formatted_columns = [f"'{col}'" for col in selected_columns]  # Wrap each item in single quotes
+            formatted_columns = [
+                f"'{col}'" for col in selected_columns
+            ]  # Wrap each item in single quotes
             command += f' --ignore "[{", ".join(formatted_columns)}]"'  # Wrap the entire list in double quotes
 
         if self.workflow_selector.currentText() == "CURATE":
-            command += ' --curate'
+            command += " --curate"
         elif self.workflow_selector.currentText() == "GENERATE":
-            command += ' --generate'
+            command += " --generate"
         elif self.workflow_selector.currentText() == "PREDICT":
-            command += ' --predict'        
+            command += " --predict"
         elif self.workflow_selector.currentText() == "VERIFY":
-            command += ' --verify'
+            command += " --verify"
         elif self.workflow_selector.currentText() == "REPORT":
-            command += ' --report'
+            command += " --report"
 
         # Add the additional parameters from the Advanced Options tab
         # GENERAL Section
@@ -1224,12 +1341,11 @@ class EasyROB(QMainWindow):
         self.repeat_kfolds_value = self.options_tab.repeat_kfolds.text().strip()
         self.auto_type_value = self.options_tab.auto_type.isChecked()
 
-
         # AQME Section
         self.descriptor_level_selected = self.options_tab.descriptor_level.currentText()
         self.atoms_selected = self.options_tab.atoms.text().strip()
 
-        # CURATE Section 
+        # CURATE Section
         self.categorical_value = self.options_tab.categoricalstr.currentText().strip()
         self.corr_filter_x_value = self.options_tab.corr_filter_xbool.isChecked()
         self.corr_filter_y_value = self.options_tab.corr_filter_ybool.isChecked()
@@ -1242,13 +1358,18 @@ class EasyROB(QMainWindow):
         type_mode = self.type_dropdown.currentText()
 
         # Default values based on type
-        default_models = {"RF", "GB", "NN", "MVL"} if type_mode == "Regression" else {"RF", "GB", "NN", "AdaB"}
+        default_models = (
+            {"RF", "GB", "NN", "MVL"}
+            if type_mode == "Regression"
+            else {"RF", "GB", "NN", "AdaB"}
+        )
         default_error_type = "rmse" if type_mode == "Regression" else "mcc"
 
         # Collect current values from GUI
 
         selected_models = {
-            model for model, checkbox in self.options_tab.modellist.items()
+            model
+            for model, checkbox in self.options_tab.modellist.items()
             if checkbox.isChecked()
         }
 
@@ -1263,7 +1384,7 @@ class EasyROB(QMainWindow):
         self.auto_test_value = self.options_tab.auto_test.isChecked()
         self.test_set_value = self.options_tab.test_set.text().strip()
 
-        # PREDICT Section 
+        # PREDICT Section
 
         self.t_value = self.options_tab.t_value.text().strip()
         self.alpha = self.options_tab.alpha.text().strip()
@@ -1276,72 +1397,78 @@ class EasyROB(QMainWindow):
             command += " --auto_type False"
 
         if self.seed_value:
-            command += f' --seed {self.seed_value}'
-        
+            command += f" --seed {self.seed_value}"
+
         if self.kfold_value:
-            command += f' --kfold {self.kfold_value}'
-        
+            command += f" --kfold {self.kfold_value}"
+
         if self.repeat_kfolds_value:
-            command += f' --repeat_kfolds {self.repeat_kfolds_value}'
+            command += f" --repeat_kfolds {self.repeat_kfolds_value}"
 
         # AQME Section command
         if self.aqme_workflow.isChecked():
-            command += ' --aqme ' 
+            command += " --aqme "
 
             # Always include descp_lvl
-            command +=  f'--descp_lvl {self.descriptor_level_selected}'
+            command += f"--descp_lvl {self.descriptor_level_selected}"
 
             # Add qdescp_atoms only if it's not empty
             if self.atoms_selected:
-            
+
                 # Split the string by commas and strip whitespace
-                atoms = [atom.strip() for atom in self.atoms_selected.split(',') if atom.strip()]
-                atoms_str = '[' + ','.join(atoms) + ']'
+                atoms = [
+                    atom.strip()
+                    for atom in self.atoms_selected.split(",")
+                    if atom.strip()
+                ]
+                atoms_str = "[" + ",".join(atoms) + "]"
 
                 # Append to the command inside the --qdescp_keywords argument
                 command += f' --qdescp_keywords "--qdescp_atoms {atoms_str}"'
-        
+
         # CURATE Section command
-        if self.categorical_value != "onehot": # Default is "onehot"
-            command += f' --categorical {self.categorical_value}'
+        if self.categorical_value != "onehot":  # Default is "onehot"
+            command += f" --categorical {self.categorical_value}"
 
         if not self.corr_filter_x_value:  # Default es True
-            command += ' --corr_filter_x False'
+            command += " --corr_filter_x False"
 
         if self.corr_filter_y_value:  # Default es False
-            command += ' --corr_filter_y True'
+            command += " --corr_filter_y True"
 
         if self.desc_thres_value:
-            command += f' --desc_thres {self.desc_thres_value}'
+            command += f" --desc_thres {self.desc_thres_value}"
 
         if self.thres_x_value:
-            command += f' --thres_x {self.thres_x_value}'
+            command += f" --thres_x {self.thres_x_value}"
 
         if self.thres_y_value:
-            command += f' --thres_y {self.thres_y_value}'
+            command += f" --thres_y {self.thres_y_value}"
 
-        # GENERATE Section command 
+        # GENERATE Section command
 
         # --model (only if selection is different from default)
         if selected_models != default_models:
-            model_list_str = "[" + ",".join(f"'{m}'" for m in sorted(selected_models)) + "]"
+            model_list_str = (
+                "[" + ",".join(f"'{m}'" for m in sorted(selected_models)) + "]"
+            )
             command += f' --model "{model_list_str}"'
 
         # --error_type (only if different from default)
         if self.error_type_value != default_error_type:
-            command += f' --error_type {self.error_type_value}'
+            command += f" --error_type {self.error_type_value}"
 
         # --init_points (default: 10)
         if self.init_points_value:
-            command += f' --init_points {self.init_points_value}'
+            command += f" --init_points {self.init_points_value}"
 
         # --n_iter (default: 10)
         if self.n_iter_value:
-            command += f' --n_iter {self.n_iter_value}'
+            command += f" --n_iter {self.n_iter_value}"
 
         # --expect_improv (default: 0.05)
         if self.expect_improv_value:
-            command += f' --expect_improv {self.expect_improv_value}'
+            command += f" --expect_improv {self.expect_improv_value}"
 
         # --pfi_filter (default: True)
         if not self.pfi_filter_value:
@@ -1349,15 +1476,15 @@ class EasyROB(QMainWindow):
 
         # --pfi_epochs (default: 5)
         if self.pfi_epochs_value:
-            command += f' --pfi_epochs {self.pfi_epochs_value}'
+            command += f" --pfi_epochs {self.pfi_epochs_value}"
 
         # --pfi_threshold (default: 0.2)
         if self.pfi_threshold_value:
-            command += f' --pfi_threshold {self.pfi_threshold_value}'
+            command += f" --pfi_threshold {self.pfi_threshold_value}"
 
         # --pfi_max (default: 0)
         if self.pfi_max_value:
-            command += f' --pfi_max {self.pfi_max_value}'
+            command += f" --pfi_max {self.pfi_max_value}"
 
         # --auto_test (default: True)
         if not self.auto_test_value:
@@ -1365,8 +1492,8 @@ class EasyROB(QMainWindow):
 
         # --test_set (default: 0.1)
         if self.test_set_value:
-            command += f' --test_set {self.test_set_value}'
-        
+            command += f" --test_set {self.test_set_value}"
+
         # PREDICT Section command
 
         # --t_value (default: 2)
@@ -1375,7 +1502,7 @@ class EasyROB(QMainWindow):
 
         # --alpha (default: 0.05)
         if self.alpha:
-            command += f" --alpha {self.alpha}" # mirar de quitar
+            command += f" --alpha {self.alpha}"  # mirar de quitar
 
         # --shap_show (default: 10)
         if self.shap_show:
@@ -1401,9 +1528,14 @@ class EasyROB(QMainWindow):
 
             # AQME
             if self.aqme_workflow.isChecked():
-                available_columns = [self.available_list.item(i).text() for i in range(self.available_list.count())]
+                available_columns = [
+                    self.available_list.item(i).text()
+                    for i in range(self.available_list.count())
+                ]
                 if "SMILES" not in available_columns:
-                    errors.append("The column 'SMILES' must be present in CSV file to use AQME Workflow.")
+                    errors.append(
+                        "The column 'SMILES' must be present in CSV file to use AQME Workflow."
+                    )
 
             # CURATE
             if self.desc_thres_value:
@@ -1494,24 +1626,26 @@ class EasyROB(QMainWindow):
             self.run_button.setDisabled(False)
             self.stop_button.setDisabled(True)
             self.progress.setRange(0, 100)
-            self.console_output.append("WARNING! Invalid parameters. Please fix them before running.")
+            self.console_output.append(
+                "WARNING! Invalid parameters. Please fix them before running."
+            )
 
     def stop_robert(self):
         """Stops the ROBERT process safely after user confirmation."""
-        
+
         # Confirmation dialog
         confirmation = QMessageBox.question(
-            self, 
-            "WARNING!", 
+            self,
+            "WARNING!",
             "Are you sure you want to stop ROBERT?",
-            QMessageBox.Yes | QMessageBox.No, 
-            QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
         )
 
         # If user selects "No", do nothing and return
         if confirmation == QMessageBox.No:
-            return  
-        
+            return
+
         # Set the flag for manual stop
         self.manual_stop = True
 
@@ -1519,19 +1653,19 @@ class EasyROB(QMainWindow):
         if self.worker and self.worker.isRunning():
             self.worker.stop()  # Calls stop() in RobertWorker
             self.worker.wait()  # Ensure thread cleanup before setting to None
-            self.worker = None  # Cleanup after 
+            self.worker = None  # Cleanup after
             self.on_process_finished(-1)  # Call cleanup function
 
     def handle_stdout(self):
-        """ Handles the output of the ROBERT process. """
+        """Handles the output of the ROBERT process."""
         output = self.process.readAllStandardOutput().data().decode("utf-8")
         self.console_output.append(output)
 
     def handle_stderr(self):
-        """ Handles the error output of the ROBERT process. """
+        """Handles the error output of the ROBERT process."""
         error_output = self.process.readAllStandardError().data().decode("utf-8")
         self.console_output.append(error_output)
-        
+
     @Slot(int, QProcess.ExitStatus)
     def on_process_finished(self, exit_code):
         """Handles the cleanup after the ROBERT process finishes."""
@@ -1545,9 +1679,17 @@ class EasyROB(QMainWindow):
             self.worker.wait()  # Ensures cleanup
             self.worker = None  # Reset the worker
 
-        #Check console output for success message
-        if not self.manual_stop and self.workflow_selector.currentText() == "Full Workflow" or self.workflow_selector.currentText() == "REPORT":
-            if exit_code == 0 and "o  ROBERT_report.pdf was created successfully in the working directory!" in self.console_output.toPlainText():
+        # Check console output for success message
+        if (
+            not self.manual_stop
+            and self.workflow_selector.currentText() == "Full Workflow"
+            or self.workflow_selector.currentText() == "REPORT"
+        ):
+            if (
+                exit_code == 0
+                and "o  ROBERT_report.pdf was created successfully in the working directory!"
+                in self.console_output.toPlainText()
+            ):
                 msg_box = QMessageBox(self)
                 msg_box.setIcon(QMessageBox.Information)
                 msg_box.setWindowTitle("Success!")
@@ -1558,60 +1700,106 @@ class EasyROB(QMainWindow):
                 view_report_button.setIcon(QIcon("icons/pdf_icon.png"))
                 msg_box.addButton(view_report_button, QMessageBox.ActionRole)
 
-                # Add "OK" button 
+                # Add "OK" button
                 msg_box.addButton("OK", QMessageBox.AcceptRole)
 
                 # Connect view_report_button to show results tab
-                view_report_button.clicked.connect(lambda: self.tab_widget.setCurrentWidget(self.tab_widget_results))
+                view_report_button.clicked.connect(
+                    lambda: self.tab_widget.setCurrentWidget(self.tab_widget_results)
+                )
 
                 msg_box.exec()
 
             else:
-                QMessageBox.warning(self, "WARNING!", "ROBERT encountered an issue while finishing. Please check the logs.")
+                QMessageBox.warning(
+                    self,
+                    "WARNING!",
+                    "ROBERT encountered an issue while finishing. Please check the logs.",
+                )
 
         # If the process was launched for a specific workflow, update the dropdown to the next step
         if self.workflow_selector.currentText() == "CURATE":
-                if exit_code == 0 and "Time CURATE: " in self.console_output.toPlainText():
-                    QMessageBox.information(self, "Success", "ROBERT has successfully completed the CURATE step.")
-                else:
-                    QMessageBox.warning(self, "WARNING!","ROBERT encountered an issue while finishing. Please check the logs.")
+            if exit_code == 0 and "Time CURATE: " in self.console_output.toPlainText():
+                QMessageBox.information(
+                    self,
+                    "Success",
+                    "ROBERT has successfully completed the CURATE step.",
+                )
+            else:
+                QMessageBox.warning(
+                    self,
+                    "WARNING!",
+                    "ROBERT encountered an issue while finishing. Please check the logs.",
+                )
 
         if self.workflow_selector.currentText() == "GENERATE":
-            if exit_code == 0 and "Time GENERATE: " in self.console_output.toPlainText():
-                QMessageBox.information(self, "Success", "ROBERT has successfully completed the GENERATE step.")
+            if (
+                exit_code == 0
+                and "Time GENERATE: " in self.console_output.toPlainText()
+            ):
+                QMessageBox.information(
+                    self,
+                    "Success",
+                    "ROBERT has successfully completed the GENERATE step.",
+                )
             else:
-                QMessageBox.warning(self, "WARNING!", "ROBERT encountered an issue while finishing. Please check the logs.")
+                QMessageBox.warning(
+                    self,
+                    "WARNING!",
+                    "ROBERT encountered an issue while finishing. Please check the logs.",
+                )
 
         if self.workflow_selector.currentText() == "PREDICT":
             if exit_code == 0 and "Time PREDICT: " in self.console_output.toPlainText():
-                QMessageBox.information(self, "Success", "ROBERT has successfully completed the PREDICT step.")
+                QMessageBox.information(
+                    self,
+                    "Success",
+                    "ROBERT has successfully completed the PREDICT step.",
+                )
             else:
-                QMessageBox.warning(self, "WARNING!", "ROBERT encountered an issue while finishing. Please check the logs.")
+                QMessageBox.warning(
+                    self,
+                    "WARNING!",
+                    "ROBERT encountered an issue while finishing. Please check the logs.",
+                )
 
         if self.workflow_selector.currentText() == "VERIFY":
             if exit_code == 0 and "Time VERIFY: " in self.console_output.toPlainText():
-                QMessageBox.information(self, "Success", "ROBERT has successfully completed the VERIFY step.")
+                QMessageBox.information(
+                    self,
+                    "Success",
+                    "ROBERT has successfully completed the VERIFY step.",
+                )
             else:
-                QMessageBox.warning(self, "WARNING!", "ROBERT encountered an issue while finishing. Please check the logs.")
+                QMessageBox.warning(
+                    self,
+                    "WARNING!",
+                    "ROBERT encountered an issue while finishing. Please check the logs.",
+                )
 
-        # Show message box for stopping   
+        # Show message box for stopping
         if exit_code == -1:
             self.console_output.clear()  # Clear the console output
-            QMessageBox.information(self, "WARNING!", "ROBERT has been successfully stopped.")
-             
+            QMessageBox.information(
+                self, "WARNING!", "ROBERT has been successfully stopped."
+            )
+
         # Reset the manual stop flag after the process is finished
         self.manual_stop = False
+
 
 class DropLabel(QFrame):
     """A widget for file selection via drag-and-drop or browsing. Can be configured for different file types."""
 
-    def __init__(self, text, parent=None, file_filter="CSV Files (*.csv)", extensions=(".csv",)):
+    def __init__(
+        self, text, parent=None, file_filter="CSV Files (*.csv)", extensions=(".csv",)
+    ):
         super().__init__(parent)
-        
+
         self.file_filter = file_filter
         self.valid_extensions = extensions
         self.setAcceptDrops(True)
-        self.callback = None  
+        self.callback = None
 
         self.setStyleSheet("font-size: 14px; border: none;")
         self.layout = QVBoxLayout(self)
@@ -1620,7 +1808,8 @@ class DropLabel(QFrame):
         # --- Instruction Label with Border ---
         self.label = QLabel(text, self)
         self.label.setAlignment(Qt.AlignCenter)
-        self.label.setStyleSheet("""
+        self.label.setStyleSheet(
+            """
             font-size: 11px; 
             font-style: italic; 
             color: gray; 
@@ -1628,13 +1817,14 @@ class DropLabel(QFrame):
             border: 2px dashed gray; 
             padding: 5px;
             border-radius: 5px;
-        """)  
+        """
+        )
         self.layout.addWidget(self.label, alignment=Qt.AlignCenter)
 
         # --- Browse Button ---
         self.browse_button = QPushButton("Browse", self)
         self.browse_button.clicked.connect(self.open_file_dialog)
-        self.browse_button.setFixedSize(120, 30)  
+        self.browse_button.setFixedSize(120, 30)
         self.browse_button.setStyleSheet(
             "padding: 6px 12px; font-size: 14px; border-radius: 5px; background-color: #555; color: white; border: 1px solid #777;"
         )
@@ -1651,7 +1841,9 @@ class DropLabel(QFrame):
 
     def open_file_dialog(self):
         """Opens file dialog to select a file based on current filter."""
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select File", "", self.file_filter)
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Select File", "", self.file_filter
+        )
         if file_path and self.callback:
             self.set_file_path(file_path)
 
@@ -1682,6 +1874,7 @@ class DropLabel(QFrame):
         """Updates the label text inside DropLabel."""
         self.label.setText(text)
 
+
 class RobertWorker(QThread):
     """A QThread that runs a subprocess asynchronously and streams real-time output."""
 
@@ -1694,7 +1887,9 @@ class RobertWorker(QThread):
         self.command = command
         self.working_dir = working_dir
         self.process = None
-        self.ansi_converter = Ansi2HTMLConverter(dark_bg=True)  # Ensures dark mode support
+        self.ansi_converter = Ansi2HTMLConverter(
+            dark_bg=True
+        )  # Ensures dark mode support
 
     def run(self):
         """Runs the subprocess and streams output line by line in real-time with ANSI support."""
@@ -1705,17 +1900,17 @@ class RobertWorker(QThread):
             stderr=subprocess.PIPE,
             text=True,
             bufsize=1,
-            universal_newlines=True
+            universal_newlines=True,
         )
 
         # Read output in real-time and convert ANSI to HTML for read correctly console
         with self.process.stdout:
-            for line in iter(self.process.stdout.readline, ''):
+            for line in iter(self.process.stdout.readline, ""):
                 formatted_line = self.ansi_converter.convert(line.strip(), full=False)
                 self.output_received.emit(formatted_line)
 
         with self.process.stderr:
-            for line in iter(self.process.stderr.readline, ''):
+            for line in iter(self.process.stderr.readline, ""):
                 formatted_line = f'<span style="color:red;">{line.strip()}</span>'
                 self.error_received.emit(formatted_line)  # Display errors in red
 
@@ -1727,6 +1922,7 @@ class RobertWorker(QThread):
         if self.process:
             self.process.kill()
             self.process = None
+
 
 class ChemDrawFileDialog(QDialog):
     def __init__(self, parent=None):
@@ -1752,7 +1948,7 @@ class ChemDrawFileDialog(QDialog):
             "Drag & Drop a main .sdf or .cdxml file here",
             self,
             file_filter="ChemDraw Files (*.sdf *.cdxml *.mol)",
-            extensions=(".sdf", ".cdxml", ".mol")
+            extensions=(".sdf", ".cdxml", ".mol"),
         )
         self.main_label.set_callback(self.set_main_file)
         layout.addWidget(self.main_label)
@@ -1762,7 +1958,7 @@ class ChemDrawFileDialog(QDialog):
             "Optional: Drag & Drop an additional .sdf or .cdxml file here",
             self,
             file_filter="ChemDraw Files (*.sdf *.cdxml *.mol)",
-            extensions=(".sdf", ".cdxml", ".mol")
+            extensions=(".sdf", ".cdxml", ".mol"),
         )
         self.optional_label.set_callback(self.set_optional_file)
         layout.addWidget(self.optional_label)
@@ -1783,13 +1979,16 @@ class ChemDrawFileDialog(QDialog):
 
     def continue_clicked(self):
         if not self.main_chemdraw_path:
-            QMessageBox.warning(self, "Missing File", "Please select a main ChemDraw file.")
+            QMessageBox.warning(
+                self, "Missing File", "Please select a main ChemDraw file."
+            )
             return
         self.accept()  # close the dialog with success
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    
+
     # --- Global Text Color Based on System Mode ---
     # Check the background color lightness to decide whether to use white or black text.
     palette = app.palette()
@@ -1798,10 +1997,10 @@ if __name__ == "__main__":
         text_color = "white"
     else:
         text_color = "black"
-        
+
     # Apply a global stylesheet for QLabel elements.
     app.setStyleSheet(f"QLabel {{ color: {text_color}; }}")
-    
+
     # --- Main Application Window ---
     window = EasyROB()
     window.show()
